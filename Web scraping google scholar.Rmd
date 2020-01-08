@@ -1,0 +1,516 @@
+---
+title: "Proje Ödevi google scholar"
+author: "Aysun Aydoğdu"
+date: "1/6/2020"
+output: html_document
+---
+
+```{r ,kutuphaneler, message=FALSE}
+suppressMessages(library(rvest)) #Web scraping için kullanılan paket
+library(data.table) #data frame için kullanılan paket
+library(dplyr) #Veriyi düzenlemek için paket
+library(ggplot2) #Grafikler için paket
+library(tidyverse)
+library(forcats)
+library(plotly) #Grafikler için paket
+```
+
+
+
+## Web scraping ile ogretim uyelerinin h index,alinti sayisi ve isimlerinin liste halinde cekilmesi.
+
+```{r}
+df1=list()
+b=1
+
+tipfaklistesi=c("Prof.Dr.Arzu DENİZBAŞI ALTINOK","Prof.Dr.Özge Ecmel ONUR","Prof. Dr. Haldun AKOĞLU","Doçent Dr. Sinan KARACABEY","Doçent Dr. Nurşen Turan YURTSEVER","Prof. Dr. Pemra ÜNALAN ","Prof. Dr. Arzu UZUNER","Prof. Dr. Mehmet AKMAN", "Prof. Dr. Ümit S. ŞEHİRLİ ","Dr. Öğr. Üyesi Özlem KİRAZLI","Prof. Dr. İsmail Hakkı CİNEL","Prof. Dr. Zeynep Zuhal AYKAÇ", "Doçent Dr. Mustafa Kemal ARSLANTAŞ","Doçent Dr. Üyesi Beliz BİLGİLİ","Dr. Öğr. Üyesi Pelin ÇORMAN DİNÇER","Dr. Öğr. Üyesi Ruslan ABDULLAYEV","Prof.Dr. Fatih BAYRAKLI ","Doçent Dr. Ferhat HARMAN","Doçent Dr. Yahya GÜVENÇ", "Prof. Dr. Hülya CABADAK","Prof. Dr. Oya ORUN","Doçent Dr. Pınar MEGA TİBER","Dr. Öğr. Üyesi Cevdet NACAR","Prof. Dr. Nural BEKİROĞLU","Prof. Dr. Gürsu KIYAN","Prof. Dr. Perran BORAN","Prof.Dr.Abdullah BEREKET",
+ "Prof.Dr.Deniz ERTEM","Prof. Dr. Bülent KARADAĞ","Prof. Dr. Eren ÖZEK","Prof. Dr. Ahmet KOÇ", "Prof. Dr. Tunç AKKOÇ","Prof. Dr. Tülay GÜRAN","Prof. Dr. Ahmet Oğuzhan ÖZEN","Prof. Dr. Safa BARIŞ",
+"Prof. Dr. İbrahim GÖKÇE","Prof. Dr. Elif AYDINER","Doçent Dr. Engin TUTAR","Doçent Dr. Nilüfer ÖZTÜRK", "Doçent Dr. Aslı MEMİŞOĞLU","Doçent Dr. Ela ERDEM ERALP","Doçent Dr. Üyesi Olcay ÜNVER", "Dr. Öğr. Üyesi Burcu ÖZTÜRK HİŞMİ","Prof. Dr. Neşe PERDAHLI FİŞ","Prof. Dr. Ayşe ARMAN","Prof. Dr. Osman SABUNCUOĞLU","Prof. Dr. Aslı Feride KAPTANOĞLU","Dr. Öğr. Üyesi Andaç SALMAN","Prof. Dr. Lütfiye DURMUŞOĞLU","Prof. Dr. Zekaver ODABAŞI","Doçent Dr. Uluhan SİLİ","Prof. Dr. Hakan GÜNDÜZ","Prof. Dr. Gülseren AKYÜZ","Prof. Dr. Tuncay DURUÖZ","Prof. Dr. İlker YAĞCI","Dr. Öğr. Üyesi Özge KENİŞ COŞKUN" ,"Dr. Öğr. Üyesi Savaş ŞENCAN","Prof. Dr. Berrak YEĞEN","Prof. Dr. Hızır KURTEL","Doçent Dr. Özgür KASIMAY ÇAKIR","Doçent Dr. Alper YILDIRIM","Arş.Gör. Dr. Zarife Nigar ÖZDEMİR","Arş.Gör. Türkan KOYUNCUOĞLU","Arş.Gör. Sevil ARABACI TAMER","Prof. Dr. Cumhur YEĞEN","Prof. Dr. Ender DULUNDU","Doçent Dr. Tolga DEMİRBAŞ","Doçent Dr. Ümit UĞURLU","Dr. Öğr. Üyesi Tevfik Kıvılcım UPRAK","Öğr.Gör. Aylin ERDİM","Prof. Dr. Bedrettin YILDIZELİ","Prof. Dr. Korkut BOSTANCI","Prof. Dr. Sait KARAKURT","Prof. Dr. Turgay ÇELİKEL","Prof. Dr. S.Emel ERYÜKSEL","Doçent Dr. Şehnaz OLGUN","Doçent Dr. Mehmet Baran BALCAN","Prof. Dr. Ebru TOKER","Prof. Dr. Osman ÇEKİÇ","Prof. Dr. Özlem ŞAHİN","Doçent Dr. Muhsin ERASLAN","Doçent Dr. Eren ÇERMAN","Doçent Dr. Hande ÇELİKER ATABERK","Prof. Dr. Dilşad SAVE","Prof. Dr. Emel LÜLECİ","Prof. Dr. Ahmet TOPUZOĞLU","Doçent Dr. Ayşe Nilüfer ÖZAYDIN","Prof. Dr. Feriha ERCAN","Prof. Dr. Şule ÇETİNEL","Prof. Dr. Serap ŞİRVANCI","Doçent Dr. Dilek AKAKIN","Dr. Öğr. Üyesi Özlem Tuğçe KAYA","Arş.Gör. Elif KERVANCIOĞLU DEMİRCİ","Prof. Dr. Haner DİRESKENELİ","Prof. Dr. Mehmet KOÇ","Prof. Dr. Osman ÖZDOĞAN","Prof. Dr. Dilek YAVUZ","Prof. Dr. Adnan GİRAL","Prof. Dr. Özlen ATUĞ","Prof. Dr. Yusuf YILMAZ","Dr. Öğr. Üyesi Ozan KOCAKAYA","Öğr.Gör. Anne Maria MAURER" ,"Prof. Dr. Begüm YILDIZHAN","Prof. Dr. Tevfik YOLDEMİR","Doçent Dr. Esra Esim BÜYÜKBAYRAK", "Dr. Öğr. Üyesi Sunullah SOYSAL","Prof. Dr. Sinan ARSAN","Prof. Dr. Koray AK","Doçent Dr. Nazan ATALAN" ,"Prof. Dr. Beste ÖZBEN SADIÇ","Prof. Dr. Bülent MUTLU","Doçent Dr. Murat SÜNBÜL","Doçent Dr. Alper KEPEZ" ,"Doçent Dr. Ayşe Ayça ÇİPRUT","Doçent Dr. Ali Cemal YUMUŞAKHUYLU","Öğr. Gör. Dr. Sıdıka CESUR","Prof. Dr. Kadriye AĞAN YILDIRIM","Prof. Dr. Kayıhan ULUÇ","Doçent Dr. Gülin SÜNTER","Prof. Dr. Tanju Yusuf ERDİL", "Prof. Dr. Turgut TUROĞLU","Prof. Dr. Mustafa AKKİPRİK","Doçent Dr. Fatih EREN","Dr. Öğr. Üyesi Can ERZİK", "Arş.Gör. Gökçe GÜLLÜ AMURAN","Prof. Dr. Zafer GÖREN","Prof. Dr. Atila KARAALP","Prof. Dr. Rezzan GÜLHAN AKER", "Prof. Dr. Ahmet ARMAN","Prof. Dr. Pınar ATA","Doçent Dr. İlter GÜNEY","Dr. Öğr. Üyesi Kenan DELİL", "Prof. Dr. Arzu İLKİ","Prof. Dr. Ufuk HASDEMİR","Prof. Dr. Ayşegül KARAHASAN","Arş.Gör. Gülşen ALTINKANAT GELMEZ", "Prof. Dr. Handan KAYA","Prof. Dr. Leyla CİNEL","Prof. Dr. Süheyla BOZKURT","Prof. Dr. Pelin BAĞCI",  "Prof. Dr. Mehmet Ali GÜLPINAR","Prof. Dr. Özlem SARIKAYA","Doçent Dr. Esra AKDENİZ","Doçent Dr. Gürkan SERT", "Prof. Dr. Tufan TARCAN","Prof. Dr. Selçuk YÜCEL","Doçent Dr. Cevdet KAYA","Doçent Dr. İlker TİNAY", "Doçent Dr.Yılören TANIDIR","Prof. Dr. Fuat DEDE","Prof. Dr. Tunç ÖNEŞ","Prof. Dr. Bülent EROL","Doçent Dr. Fatih KÜÇÜKDURMAZ","Dr. Öğr. Üyesi Ahmet Hamdi AKGÜLLE","Dr. Öğr. Üyesi Osman Mert TOPKAR","Dr. Öğr. Üyesi Nihal DURMUŞ KOCAASLAN","Dr. Öğr. Üyesi Melekber ÇAVUŞ ÖZKAN","Prof.Dr Mustafa ADLI","Doçent Dr. İlknur ALSAN ÇETİN","Prof. Dr. Nuri Çagatay ÇİMŞİT", "Doçent Dr. Derya TÜRELİ","Prof. Dr. Kemal SAYAR","Prof. Dr. Volkan TOPÇUOĞLU", "Prof. Dr. Yıldız AKVARDAR","Doçent Dr. Mesut YILDIZ","Prof. Dr. Nesrin KARTAL ÖZER", "Prof. Dr. Önder ŞİRİKÇİ","Prof. Dr. Süha YALÇIN","Prof. Dr. Goncagül HAKLAR",
+                "Öğr. Gör. Dr. Erdi SÖZEN","Öğr. Gör. Dr. Ayşe Mine YILMAZ","Dr. Öğr. Üyesi Çiğdem ÖZPOLAT")
+
+for(i in tipfaklistesi)
+{
+  if (i=="Prof.Dr.Arzu DENİZBAŞI ALTINOK")
+  {url_name<-("https://scholar.google.com.tr/citations?user=bOh24cQAAAAJ&hl=tr&oi=ao")}
+  else if (i=="Prof.Dr.Özge Ecmel ONUR")
+  {url_name <- ("https://scholar.google.com.tr/citations?user=GUN2dsYAAAAJ&hl=tr&oi=sra")}
+  else if (i=="Prof. Dr. Haldun AKOĞLU")
+  {url_name <- ("https://scholar.google.com.tr/citations?user=MWeAP5cAAAAJ&hl=tr&oi=ao")}
+  else if (i=="Doçent Dr. Sinan KARACABEY")
+  {url_name <- ("https://scholar.google.com.tr/citations?user=ZJyAT5sAAAAJ&hl=tr&oi=ao")}
+  else if (i=="Dr. Öğr. Üyesi Çiğdem ÖZPOLAT")
+  {url_name <- ("https://scholar.google.com.tr/citations?user=-RDgUe0AAAAJ&hl=tr&oi=ao")}
+  else if (i=="Doçent Dr. Nurşen Turan YURTSEVER")
+  {url_name <- ("https://scholar.google.com.tr/citations?user=K_ioJegAAAAJ&hl=tr&oi=ao")}
+  else if (i=="Prof. Dr. Pemra ÜNALAN ")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=bjYwUqwAAAAJ")}
+  else if (i=="Prof. Dr. Arzu UZUNER")
+  {url_name <- ("https://scholar.google.com.tr/citations?user=zbTT4QsAAAAJ&hl=tr&oi=sra")}
+  else if (i=="Prof. Dr. Mehmet AKMAN")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=lN2EYlgAAAAJ")}
+  else if (i=="Prof. Dr. Ümit S. ŞEHİRLİ ")
+  {url_name <- ("https://scholar.google.com.tr/citations?user=yXDBY6UAAAAJ&hl=tr&oi=ao")}
+  else if (i=="Dr. Öğr. Üyesi Özlem KİRAZLI")
+  {url_name <- ("https://scholar.google.com.tr/citations?user=cxW4_lYAAAAJ&hl=tr&oi=ao")}
+  else if (i=="Prof. Dr. İsmail Hakkı CİNEL")
+  {url_name <- ("https://scholar.google.com.tr/citations?user=YvOWKZEAAAAJ&hl=tr&oi=sra")}
+  else if (i=="Prof. Dr. Zeynep Zuhal AYKAÇ")
+  {url_name <- ("https://scholar.google.com.tr/citations?user=eepEP7AAAAAJ&hl=tr&oi=sra")}
+  else if (i=="Doçent Dr. Mustafa Kemal ARSLANTAŞ")
+  {url_name <- ("https://scholar.google.com.tr/citations?user=Q7sZxvIAAAAJ&hl=tr&oi=ao")}
+  else if (i=="Doçent Dr. Üyesi Beliz BİLGİLİ")
+  {url_name <- ("https://scholar.google.com.tr/citations?user=YCoRVp8AAAAJ&hl=tr&oi=ao")}
+  else if (i=="Dr. Öğr. Üyesi Pelin ÇORMAN DİNÇER")
+  {url_name <- ("https://scholar.google.com.tr/citations?user=D7HmAE0AAAAJ&hl=tr&oi=ao")}
+  else if (i=="Dr. Öğr. Üyesi Ruslan ABDULLAYEV")
+  {url_name <- ("https://scholar.google.com.tr/citations?user=yRscmWkAAAAJ&hl=tr&oi=ao")}
+  else if (i=="Prof.Dr. Fatih BAYRAKLI ")
+  {url_name <- ("https://scholar.google.com.tr/citations?user=K_fDON4AAAAJ&hl=tr&oi=ao")}
+  else if (i=="Doçent Dr. Ferhat HARMAN")
+  {url_name <- ("https://scholar.google.com.tr/citations?user=tM2PCp8AAAAJ&hl=tr&oi=ao")}
+  else if (i=="Doçent Dr. Yahya GÜVENÇ")
+  {url_name <- ("https://scholar.google.com.tr/citations?user=_5Ads20AAAAJ&hl=tr&oi=ao")}
+  else if (i=="Prof. Dr. Hülya CABADAK")
+  {url_name <- ("https://scholar.google.com.tr/citations?user=8oty6kEAAAAJ&hl=tr&oi=ao")}
+  else if (i=="Prof. Dr. Oya ORUN")
+  {url_name <- ("https://scholar.google.com.tr/citations?user=I5T9eT8AAAAJ&hl=tr&oi=ao")}
+  else if (i=="Doçent Dr. Pınar MEGA TİBER")
+  {url_name <- ("https://scholar.google.com.tr/citations?user=smxiewEAAAAJ&hl=tr&oi=ao")}
+  else if (i=="Dr. Öğr. Üyesi Cevdet NACAR")
+  {url_name <- ("https://scholar.google.com.tr/citations?user=9UvWb7EAAAAJ&hl=tr&oi=ao")}
+  else if (i=="Prof. Dr. Nural BEKİROĞLU")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=-8SeTYwAAAAJ")}
+  else if (i=="Prof. Dr. Gürsu KIYAN")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=8QXIrz0AAAAJ")}
+  else if (i=="Prof. Dr. Perran BORAN")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=rBf15PUAAAAJ")}
+  else if (i=="Prof.Dr.Abdullah BEREKET")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=4yvRE9kAAAAJ")}
+  else if (i=="Prof.Dr.Deniz ERTEM")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=A3-nXj4AAAAJ")}
+  else if (i=="Prof. Dr. Bülent KARADAĞ")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=TT1b748AAAAJ")}
+  else if (i=="Prof. Dr. Eren ÖZEK")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=LyrhTH0AAAAJ")}
+  else if (i=="Prof. Dr. Ahmet KOÇ")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=aIA0_fcAAAAJ")}
+  else if (i=="Prof. Dr. Tunç AKKOÇ")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=ofSyVNcAAAAJ")}
+  else if (i=="Prof. Dr. Tülay GÜRAN")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=TA-ApTgAAAAJ")}
+  else if (i=="Prof. Dr. Ahmet Oğuzhan ÖZEN")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=bKVePnUAAAAJ")}
+  else if (i=="Prof. Dr. Safa BARIŞ")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=O_xmITsAAAAJ")}
+  else if (i=="Prof. Dr. İbrahim GÖKÇE")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=zqJ_vZkAAAAJ")}
+  else if (i=="Prof. Dr. Elif AYDINER")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=S2RyzWIAAAAJ")}
+  else if (i=="Doçent Dr. Engin TUTAR")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=wN8SA9gAAAAJ")}
+  else if (i=="Doçent Dr. Nilüfer ÖZTÜRK")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=kM7L3AsAAAAJ")}
+  else if (i=="Doçent Dr. Aslı MEMİŞOĞLU")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=Q0RAgkUAAAAJ")}
+  else if (i=="Doçent Dr. Ela ERDEM ERALP")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=LRf9xEgAAAAJ")}
+  else if (i=="Doçent Dr. Üyesi Olcay ÜNVER")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=09cLh5QAAAAJ")}
+  else if (i=="Dr. Öğr. Üyesi Burcu ÖZTÜRK HİŞMİ")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=Wiz-71UAAAAJ")}
+  else if (i=="Prof. Dr. Neşe PERDAHLI FİŞ")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=sD26XP4AAAAJ")}
+  else if (i=="Prof. Dr. Ayşe ARMAN")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=sBwKEbQAAAAJ")}
+  else if (i=="Prof. Dr. Osman SABUNCUOĞLU")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=Se4T-N8AAAAJ")}
+  else if (i=="Prof. Dr. Aslı Feride KAPTANOĞLU")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=q9gq2G0AAAAJ")}
+  else if (i=="Dr. Öğr. Üyesi Andaç SALMAN")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=iVK6exUAAAAJ")}
+  else if (i=="Prof. Dr. Lütfiye DURMUŞOĞLU")
+  {url_name <- ("https://scholar.google.com.tr/citations?user=c0HGhMoAAAAJ&hl=tr&oi=ao")}
+  else if (i=="Prof. Dr. Zekaver ODABAŞI")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=bh9Zt5QAAAAJ")}
+  else if (i=="Doçent Dr. Uluhan SİLİ")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=CYanlVAAAAAJ")}
+  else if (i=="Prof. Dr. Hakan GÜNDÜZ")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=YTpS8BcAAAAJ")}
+  else if (i=="Prof. Dr. Gülseren AKYÜZ")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=tkM1lBcAAAAJ")}
+  else if (i=="Prof. Dr. Tuncay DURUÖZ")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=PWfhqtcAAAAJ")}
+  else if (i=="Prof. Dr. İlker YAĞCI")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=jGPzV8QAAAAJ")}
+  else if (i=="Dr. Öğr. Üyesi Özge KENİŞ COŞKUN")
+  {url_name <- ("https://scholar.google.com.tr/citations?user=1dl2CDoAAAAJ&hl=tr&oi=ao")}
+  else if (i=="Dr. Öğr. Üyesi Savaş ŞENCAN")
+  {url_name <- ("https://scholar.google.com.tr/citations?user=xoYmzcQAAAAJ&hl=tr&oi=ao")}
+  else if (i=="Prof. Dr. Berrak YEĞEN")
+  {url_name <- ("https://scholar.google.com.tr/citations?user=t0xyHssAAAAJ&hl=tr&oi=ao")}
+  else if (i=="Prof. Dr. Hızır KURTEL")
+  {url_name <- ("https://scholar.google.com.tr/citations?user=7i0jNOcAAAAJ&hl=tr&oi=ao")}
+  else if (i=="Doçent Dr. Özgür KASIMAY ÇAKIR")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=YoE-z8wAAAAJ")}
+  else if (i=="Doçent Dr. Alper YILDIRIM")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=-xQDMnQAAAAJ")}
+  else if (i=="Arş.Gör. Dr. Zarife Nigar ÖZDEMİR")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=ln7Ax-sAAAAJ")}
+  else if (i=="Arş.Gör. Türkan KOYUNCUOĞLU")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=uMY65aUAAAAJ")}
+  else if (i=="Arş.Gör. Sevil ARABACI TAMER")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=X4oJ7WgAAAAJ")}
+  else if (i=="Prof. Dr. Cumhur YEĞEN")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=SdLCaHQAAAAJ")}
+  else if (i=="Prof. Dr. Ender DULUNDU")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=xSlQJ2MAAAAJ")}
+  else if (i=="Doçent Dr. Tolga DEMİRBAŞ")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=nBx_MIEAAAAJ")}
+  else if (i=="Doçent Dr. Ümit UĞURLU")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=BJaldB0AAAAJ")}
+  else if (i=="Dr. Öğr. Üyesi Tevfik Kıvılcım UPRAK")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=XjcHv9AAAAAJ")}
+  else if (i=="Öğr.Gör. Aylin ERDİM")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=PXYaXLwAAAAJ")}
+  else if (i=="Prof. Dr. Bedrettin YILDIZELİ")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=Ql8EiHkAAAAJ")}
+  else if (i=="Prof. Dr. Korkut BOSTANCI")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=8XR-zRUAAAAJ")}
+  else if (i=="Prof. Dr. Sait KARAKURT")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=ySPCLzEAAAAJ")}
+  else if (i=="Prof. Dr. Turgay ÇELİKEL")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=-0nwfVgAAAAJ")}
+  else if (i=="Prof. Dr. S.Emel ERYÜKSEL")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=JhpgbNoAAAAJ")}
+  else if (i=="Doçent Dr. Şehnaz OLGUN")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=BgvtwwUAAAAJ")}
+  else if (i=="Doçent Dr. Mehmet Baran BALCAN")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=sbP4-CkAAAAJ")}
+  else if (i=="Prof. Dr. Ebru TOKER")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=GWpaKTUAAAAJ")}
+  else if (i=="Prof. Dr. Osman ÇEKİÇ")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=ykyX7kkAAAAJ")}
+  else if (i=="Doçent Dr. Mehmet Baran BALCAN")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=sbP4-CkAAAAJ")}
+  else if (i=="Prof. Dr. Özlem ŞAHİN")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=pN2sOFgAAAAJ")}
+  else if (i=="Doçent Dr. Muhsin ERASLAN")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=16jUN58AAAAJ")}
+  else if (i=="Doçent Dr. Eren ÇERMAN")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=lfx1PPAAAAAJ")}
+  else if (i=="Doçent Dr. Hande ÇELİKER ATABERK")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=L3-ypV0AAAAJ")}
+  else if (i=="Prof. Dr. Dilşad SAVE")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=QVnVWeAAAAAJ")}
+  else if (i=="Prof. Dr. Emel LÜLECİ")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=GHk3D3wAAAAJ")}
+  else if (i=="Prof. Dr. Ahmet TOPUZOĞLU")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=aFIcwO4AAAAJ")}
+  else if (i=="Doçent Dr. Ayşe Nilüfer ÖZAYDIN")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=yPokTpYAAAAJ")}
+  else if (i=="Prof. Dr. Feriha ERCAN")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=lNMo6TIAAAAJ")}
+  else if (i=="Prof. Dr. Şule ÇETİNEL")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=DV6CfycAAAAJ")}
+  else if (i=="Prof. Dr. Serap ŞİRVANCI")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=eGYrflIAAAAJ")}
+  else if (i=="Doçent Dr. Dilek AKAKIN")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=6tnOZEwAAAAJ")}
+  else if (i=="Dr. Öğr. Üyesi Özlem Tuğçe KAYA")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=UXxcKGoAAAAJ")}
+  else if (i=="Arş.Gör. Elif KERVANCIOĞLU DEMİRCİ")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=0AFwHYIAAAAJ")}
+  else if (i=="Prof. Dr. Haner DİRESKENELİ")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=zPYjRKYAAAAJ")}
+  else if (i=="Prof. Dr. Mehmet KOÇ")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=Elmz6y8AAAAJ")}
+  else if (i=="Prof. Dr. Osman ÖZDOĞAN")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=DU5lwM8AAAAJ")}
+  else if (i=="Prof. Dr. Dilek YAVUZ")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=Zlr3zisAAAAJ")}
+  else if (i=="Prof. Dr. Adnan GİRAL")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=UIhZX-AAAAAJ")}
+  else if (i=="Prof. Dr. Özlen ATUĞ")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=ETpn62MAAAAJ")}
+  else if (i=="Prof. Dr. Yusuf YILMAZ")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=-xUdXf8AAAAJ")}
+  else if (i=="Dr. Öğr. Üyesi Ozan KOCAKAYA")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=yjQHj5IAAAAJ")}
+  else if (i=="Öğr.Gör. Anne Maria MAURER")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=bA4PAjAAAAAJ")}
+  else if (i=="Prof. Dr. Begüm YILDIZHAN")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=_nVG_3oAAAAJ")}
+  else if (i=="Prof. Dr. Tevfik YOLDEMİR")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=vwOO8gsAAAAJ")}
+  else if (i=="Doçent Dr. Esra Esim BÜYÜKBAYRAK")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=FHX8BMoAAAAJ")}
+  else if (i=="Dr. Öğr. Üyesi Sunullah SOYSAL")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=zl4-8_EAAAAJ")}
+  else if (i=="Prof. Dr. Sinan ARSAN")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=nQ2raioAAAAJ")}
+  else if (i=="Prof. Dr. Koray AK")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=7oBnb0MAAAAJ")}
+  else if (i=="Doçent Dr. Nazan ATALAN")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=0ZXwzWUAAAAJ")}
+  else if (i=="Prof. Dr. Beste ÖZBEN SADIÇ")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=gA-IhlQAAAAJ")}
+  else if (i=="Prof. Dr. Bülent MUTLU")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=sNqydlQAAAAJ")}
+  else if (i=="Doçent Dr. Murat SÜNBÜL")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=gnK6ZhwAAAAJ")}
+  else if (i=="Doçent Dr. Alper KEPEZ")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=x6_u9z8AAAAJ")}
+  else if (i=="Doçent Dr. Ayşe Ayça ÇİPRUT")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=S9tjwcUAAAAJ")}
+  else if (i=="Doçent Dr. Ali Cemal YUMUŞAKHUYLU")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=7_Q_8_UAAAAJ")}
+  else if (i=="Öğr. Gör. Dr. Sıdıka CESUR")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=lX1zgkIAAAAJ")}
+  else if (i=="Prof. Dr. Kadriye AĞAN YILDIRIM")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=Z7pDRg8AAAAJ")}
+  else if (i=="Prof. Dr. Kayıhan ULUÇ")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=xZWEWxYAAAAJ")}
+  else if (i=="Doçent Dr. Gülin SÜNTER")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=tRFL9xsAAAAJ")}
+  else if (i=="Prof. Dr. Tanju Yusuf ERDİL")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=CD7zt-oAAAAJ")}
+  else if (i=="Prof. Dr. Turgut TUROĞLU")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=3Lh3Qr0AAAAJ")}
+  if (i=="Prof. Dr. Mustafa AKKİPRİK")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=lxB8oPkAAAAJ")}
+  else if (i=="Doçent Dr. Fatih EREN")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=sXbXdIcAAAAJ")}
+  else if (i=="Dr. Öğr. Üyesi Can ERZİK")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=lcfMStUAAAAJ")}
+  else if (i=="Arş.Gör. Gökçe GÜLLÜ AMURAN")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=m8D332gAAAAJ")}
+  else if (i=="Prof. Dr. Zafer GÖREN")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=IVdb31sAAAAJ")}
+  else if (i=="Prof. Dr. Atila KARAALP")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=B5P23gYAAAAJ")}
+  else if (i=="Prof. Dr. Rezzan GÜLHAN AKER")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=UtHNB9YAAAAJ")}
+  else if (i=="#Prof. Dr. Ahmet ARMAN")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=7jLdpSMAAAAJ")}
+  else if (i=="Prof. Dr. Pınar ATA")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=fWYWuXIAAAAJ")}
+  else if (i=="Doçent Dr. İlter GÜNEY")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=wsb2f8gAAAAJ")}
+  else if (i=="Dr. Öğr. Üyesi Kenan DELİL")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=cX1QBxYAAAAJ")}
+  else if (i=="Prof. Dr. Arzu İLKİ")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=WjHHTLQAAAAJ")}
+  else if (i=="Prof. Dr. Ufuk HASDEMİR")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=1Ot5dioAAAAJ")}
+  else if (i=="Prof. Dr. Ayşegül KARAHASAN")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=iAgHHawAAAAJ")}
+  else if (i=="Arş.Gör. Gülşen ALTINKANAT GELMEZ")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=6bT0I7wAAAAJ")}
+  else if (i=="Prof. Dr. Handan KAYA")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=lYOBRnIAAAAJ")}
+  else if (i=="Prof. Dr. Leyla CİNEL")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=uT89Y48AAAAJ")}
+  else if (i=="Prof. Dr. Süheyla BOZKURT")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=0ajNsoEAAAAJ")}
+  else if (i=="Prof. Dr. Pelin BAĞCI")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=VYE2H0wAAAAJ")}
+  else if (i=="Prof. Dr. Mehmet Ali GÜLPINAR")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=_NqPWG0AAAAJ")}
+  else if (i=="Prof. Dr. Özlem SARIKAYA")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=nb5Kw9cAAAAJ")}
+  else if (i=="Doçent Dr. Esra AKDENİZ")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=In_P30cAAAAJ")}
+  else if (i=="Doçent Dr. Gürkan SERT")
+  {url_name <- ("https://scholar.google.com/citations?user=vJsT8KYAAAAJ&hl=tr&oi=ao")}
+  else if (i=="Prof. Dr. Tufan TARCAN")
+  {url_name <- ("https://scholar.google.com/citations?user=gZaB9zUAAAAJ&hl=tr&oi=ao")}
+  else if (i=="Prof. Dr. Selçuk YÜCEL")
+  {url_name <- ("https://scholar.google.com/citations?user=4xfFSCIAAAAJ&hl=tr&oi=ao")}
+  else if (i=="Doçent Dr. Cevdet KAYA")
+  {url_name <- ("https://scholar.google.com/citations?user=OMMsmwoAAAAJ&hl=tr&oi=ao")}
+  else if (i=="Doçent Dr. İlker TİNAY")
+  {url_name <- ("https://scholar.google.com/citations?user=RqCqjaMAAAAJ&hl=tr&oi=ao")}
+  else if (i=="Doçent Dr.Yılören TANIDIR")
+  {url_name <- ("https://scholar.google.com/citations?user=gEuiuocAAAAJ&hl=tr&oi=sra")}
+  else if (i=="Prof. Dr. Fuat DEDE")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=p42PiM4AAAAJ")}
+  else if (i=="Prof. Dr. Tunç ÖNEŞ")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=dLL62boAAAAJ")}
+  else if (i=="Prof. Dr. Bülent EROL")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=sfqZKLAAAAAJ")}
+  else if (i=="Doçent Dr. Fatih KÜÇÜKDURMAZ")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=Z08ZBS0AAAAJ")}
+  else if (i=="Dr. Öğr. Üyesi Ahmet Hamdi AKGÜLLE")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=ZZvuqcIAAAAJ")}
+  else if (i=="Dr. Öğr. Üyesi Osman Mert TOPKAR")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=A5epnBQAAAAJ")}
+  else if (i=="Dr. Öğr. Üyesi Nihal DURMUŞ KOCAASLAN")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=P5vTVzgAAAAJ")}
+  else if (i=="Dr. Öğr. Üyesi Melekber ÇAVUŞ ÖZKAN")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=z5JE-4kAAAAJ")}
+  else if (i=="Prof.Dr Mustafa ADLI")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=d1VUVM4AAAAJ")}
+  else if (i=="Doçent Dr. İlknur ALSAN ÇETİN")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=BZcwaDIAAAAJ")}
+  else if (i=="Prof. Dr. Nuri Çagatay ÇİMŞİT")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=bY8UfAoAAAAJ")}
+  else if (i=="Doçent Dr. Derya TÜRELİ")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=CGeCH8wAAAAJ")}
+  else if (i=="Prof. Dr. Kemal SAYAR")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=8YBPw8gAAAAJ")}
+  else if (i=="Prof. Dr. Volkan TOPÇUOĞLU")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=h-u975QAAAAJ")}
+  else if (i=="Prof. Dr. Yıldız AKVARDAR")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=JgwYKLsAAAAJ")}
+  else if (i=="Doçent Dr. Mesut YILDIZ")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=zST8f54AAAAJ")}
+  else if (i=="Prof. Dr. Nesrin KARTAL ÖZER")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=5WWO9swAAAAJ")}
+  else if (i=="Prof. Dr. Önder ŞİRİKÇİ")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=h82CF_8AAAAJ")}
+  else if (i=="Prof. Dr. Süha YALÇIN")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=FBBsvtgAAAAJ")}
+  else if (i=="Prof. Dr. Goncagül HAKLAR")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=xJkm_s4AAAAJ")}
+  else if (i=="Öğr. Gör. Dr. Erdi SÖZEN")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=yqTfrTwAAAAJ")}
+  else if (i=="Öğr. Gör. Dr. Ayşe Mine YILMAZ")
+  {url_name <- ("https://scholar.google.com.tr/citations?hl=tr&user=7JcECAUAAAAJ")}
+  else if (i=="Dr. Öğr. Üyesi Çiğdem ÖZPOLAT")
+  {url_name <- ("https://scholar.google.com.tr/citations?user=-RDgUe0AAAAJ&hl=tr&oi=ao")}
+  
+  wp <- read_html(url_name)
+  Hindex <- html_text(html_nodes(wp, "tr:nth-child(2) .gsc_rsb_sc1+ .gsc_rsb_std"))
+  Alinti<- html_text(html_nodes(wp, "tr:nth-child(1) .gsc_rsb_sc1+ .gsc_rsb_std"))
+  Yazar<- html_text(html_nodes(wp,"#gsc_prf_in"))
+  
+  df <- data.frame(Yazar=Yazar, Alinti = Alinti, Hindex=Hindex, stringsAsFactors = FALSE)
+  df1[[b]]=df
+  b=b+1
+}
+
+Liste=rbindlist(df1)
+
+Liste
+```
+## Asagıdaki degiskenler sayisal degisken olarak alındi.
+
+```{r}
+
+str(Liste)
+Liste$Hindex=as.integer(Liste$Hindex)
+Liste$Alinti=as.integer(Liste$Alinti)
+```
+
+## H indexleri buyukten kucuge dogru siralandi
+```{r}
+Listeyeni<- Liste %>% arrange(desc(Hindex))
+
+```
+
+## Degiskenleri gorsellestirmek icin kategorik hale getirdik.
+```{r message=FALSE, warning=FALSE}
+
+
+alinti_durumu<-rep(NA,length(Listeyeni$Alinti))
+
+alinti_durumu<-0
+
+for(i in 1:length(Listeyeni$Alinti)){if(Listeyeni$Alinti[i]<967){alinti_durumu[i]<-"Küçük Değer"}else{if(Listeyeni$Alinti[i]<5000){alinti_durumu[i]<-"Orta Değer"}else{alinti_durumu[i]<-"Yüksek Değer"}}}
+Listeyeni$alinti_durumu<- alinti_durumu
+
+```
+
+
+```{r}
+hindex_durumu<-rep(NA,length(Listeyeni$Hindex))
+
+
+for(i in 1:length(Listeyeni$Hindex)){if(Listeyeni$Hindex[i]<13.43023){hindex_durumu[i]<-"Az"}else{if(Listeyeni$Hindex[i]<30){hindex_durumu[i]<-"Orta"}else{hindex_durumu[i]<-"Yüksek"}}}
+Listeyeni$hindex_durumu<- hindex_durumu
+
+
+
+```
+
+
+## Cubuk Grafigi
+
+```{r message=FALSE}
+
+head(Listeyeni,n=9) %>%
+  ggplot( aes(x=Yazar, y=Hindex)) +
+    geom_bar(stat="identity", fill="#69b3a2",  width=.7) +
+    coord_flip() +
+    xlab("") +
+    theme_bw()+
+  scale_x_discrete(limits=c("Haner Direskeneli","Berrak Ç. Yeğen","Feriha Ercan","Prof Dr Yusuf Yılmaz"	,"Abdullah Bereket","sule cetinel","Osman Cekic","Ismail Cinel"))+
+  ggtitle("Tıp Fakültesi Hocalarının H index Sayıları") +
+    xlab("")
+
+ 
+```
+
+
+Web sitesinden kodlar belirlenip R’da veriyi elde ettikten ve tablo elde edildikten sonra H-index’ler küçükten büyüğe doğru sıralanmıştır.
+
+## Sacilim Grafigi
+
+```{r message=FALSE, warning=FALSE}
+ggplot(data = Listeyeni) +
+geom_point(mapping = aes(x = Alinti , y = Hindex), colour = "red", size = 2)+theme_minimal()
+  ggtitle("H index ve Alinti Sayısı İçin Saçılım Grafiği") 
+   
+```
+Grafikte gordugümüz üzere alintı sayısı arttıgında h indexi aynı oranda artmayan gözlemler vardır. Bunun nedeni ise yayınlarının eşit miktarda alıntı almamasıdr.
+
+## Sacilim Grafigi 2
+```{r}
+
+p <- plot_ly(Listeyeni, x = ~Alinti, y = ~Hindex, type = 'scatter', mode = 'markers')%>%
+  layout(title = 'Hindex Ve Alinti Sayisi İcin Sacilim Grafigi',
+         xaxis = list(showgrid = FALSE),
+         yaxis = list(showgrid = FALSE))
+
+p
+
+
+```
+
+##  Kutu Grafigi
+
+```{r}
+library(viridis)
+Listeyeni %>%
+  ggplot( aes(x=hindex_durumu, y=Hindex, fill=hindex_durumu)) +
+    geom_boxplot() +
+    scale_fill_viridis(discrete = TRUE, alpha=0.3) +
+    geom_jitter(color="black", size=1, alpha=0.5) +
+   
+    theme(
+      legend.position="none",
+      plot.title = element_text(size=11)
+    ) +
+    ggtitle("Tıp Fakültesi Hocalarının H index Durumları") +
+    xlab("Hindex Durumu")+
+   theme_minimal()
+```
+
+Hindexleri kategorileştirerek 3 gruba ayırdık.
+Grafikte gördüğümüz gibi hindex’i 14’ün altında olan öğretim üyesi daha çoktur.
+40 ve üzeri olanların sayısı daha azdır.
+
+
+## H indexi icin Histogram Grafigi
+
+```{r}
+ggplot(data = Listeyeni) + 
+  geom_histogram(mapping = aes(x =Hindex, y = ..density..), colour = "black", fill = "orange", binwidth = 2) + 
+  stat_function(fun = dnorm, args = list(mean = mean(Listeyeni$Hindex, na.rm = TRUE), sd = sd(Listeyeni$Hindex, na.rm = TRUE)), colour = "purple", size = 1) + 
+  labs(x = "H_index", y = "Yoğunluk")+theme_minimal()+ggtitle("Hindex İçin Histogram")
+
+```
+
+Hindexler için yoğunluk grafiği hazırladık ve grafiğe baktığımızda, hindexlerin 8-10 bandında daha yoğunlukta olduğunu grafiğimizin de bu yüzden sağa çarpık olduğunu belirledik.
+
+
